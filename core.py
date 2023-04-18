@@ -42,31 +42,30 @@ class Polynome(Fonction):
 
         self.constanteTemps = np.abs(
             np.real(
-            np.divide(
-            np.ones_like(self.roots),
-            self.roots,
-            out=np.zeros_like(self.roots),
-            where=self.roots != 0
-        )))
+                np.divide(
+                    np.ones_like(self.roots),
+                    self.roots,
+                    out=np.zeros_like(self.roots),
+                    where=self.roots != 0
+                )))
         # print(self.roots)
         # print(self.matriceCompagne)
         # print(self.matriceModale)
 
     def matrice_commande(self, dim: int):
-        #print(dim,self.coeff.shape)
+        # print(dim,self.coeff.shape)
         """if dim >= self.coeff.shape[0]:
             l = dim 
         else:"""
-        
+
         l = self.coeff.shape[0]
 
-
-        result = np.zeros(shape=(dim,l))
+        result = np.zeros(shape=(dim, l))
 
         for i in range(self.coeff.shape[0]):
             result[dim-1, i] = self.coeff[self.coeff.shape[0] - i-1]
 
-        #print(result)
+        # print(result)
 
         return result
 
@@ -161,6 +160,52 @@ class SystemeLineaire(FonctionRatiaonnelle):
 
     def __call__(self, x):
         return self.Num(x)/self.Den(x)
+
+
+def euler_implicite(H: SystemeLineaire, temps,
+                    U, C, X0, input_type="compteur"):
+    """
+    H: C'est la fonction de transfert en temps continue de la fonction linéaire
+    temps: Le temps pour la simulation
+    U: Une fonction qui renvoie l'entrée
+    C: La matrice C
+    X0: Les condititions initiale
+    type_temps: Pour savoir si on envoie le compteur dans U ou si on envoie le temps
+    """
+    A = H.Den.matriceCompagne
+    # print(A)
+    B = H.Num.matrice_commande(A.shape[0])
+
+    #print(A,"\n\n", B)
+
+    X = X0
+
+    dt = 0
+    y = np.zeros_like(temps)
+    compteur = 0
+    T = 0
+    for i in range(1, temps.shape[0]):
+        dt = temps[i] - temps[i-1]
+
+        # On doit diviser la sortie par le coefficient de y'(n)
+        if input_type == "compteur":
+            Input = U(compteur) / H.Den.coeff[0]
+        else:
+            Input = U(T)/H.Den.coeff[0]
+
+        Xt = np.linalg.inv(np.eye(A.shape[0], A.shape[0]) - A*dt)
+
+        #print(B,Input,np.dot(B, Input),"Elvis")
+        print(Xt, X, B, Input, np.dot(B, Input))
+        X = np.dot(Xt, X + np.dot(B, Input)*dt)
+
+        s = np.dot(C, X)
+        y[i] = s
+
+        compteur += 1
+        T += dt
+
+    return y
 
 
 if __name__ == "__main__":
