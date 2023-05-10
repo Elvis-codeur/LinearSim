@@ -44,7 +44,7 @@ class Polynome(Fonction):
             np.real(
                 np.divide(
                     np.ones_like(self.roots),
-                    self.roots,
+                    np.abs(self.roots),
                     out=np.zeros_like(self.roots),
                     where=self.roots != 0
                 )))
@@ -176,7 +176,7 @@ def euler_implicite(H: SystemeLineaire, temps,
     # print(A)
     B = H.Num.matrice_commande(A.shape[0])
 
-    #print(A,"\n\n", B)
+    print(A,"\n\n", B)
 
     X = X0
 
@@ -195,8 +195,9 @@ def euler_implicite(H: SystemeLineaire, temps,
 
         Xt = np.linalg.inv(np.eye(A.shape[0], A.shape[0]) - A*dt)
 
+        #print(B,Input,"elv")
         #print(B,Input,np.dot(B, Input),"Elvis")
-        print(Xt, X, B, Input, np.dot(B, Input))
+        #print(Xt, X, B, Input, np.dot(B, Input))
         X = np.dot(Xt, X + np.dot(B, Input)*dt)
 
         s = np.dot(C, X)
@@ -206,6 +207,16 @@ def euler_implicite(H: SystemeLineaire, temps,
         T += dt
 
     return y
+
+def create_input(dim,derive_n):
+    def U(compteur):
+        if compteur == 0:
+            return np.array([1 for i in range(derive_n+1)]+
+                            [0 for i in range(dim-derive_n-1)])
+        else:
+            return np.array([1]+[0 for i in range(dim-1)])
+
+    return U
 
 
 if __name__ == "__main__":

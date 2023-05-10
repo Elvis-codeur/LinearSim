@@ -1,6 +1,9 @@
+import sys
 import matplotlib.pyplot as plt 
 import numpy as np 
-from core import SystemeLineaire
+from PyQt5 import QtCore, QtWidgets
+from core import SystemeLineaire,create_input,euler_implicite,Polynome
+from plotting_core import StepWindow
 def impulse():
     a = 0
 
@@ -83,3 +86,58 @@ def nichols(H:SystemeLineaire,freq_debut=0.001,freq_fin=100,ppd=50):
     
     ax.grid(True,"both",linewidth=0.8)
     plt.show()
+
+def step(H:SystemeLineaire):
+    
+    C = np.array([1] + [0 for i in range(H.Den.coeff.shape[0] - 2)])
+    X0 = np.array([0 for i in range(H.Den.coeff.shape[0] - 1)])
+
+    def j(compteur):
+        result = np.flip(H.Num.coeff != 0)*1
+        if compteur == 0:
+            return result
+        else:
+            if result[0] > 0:
+                result = result*0
+                result[0] = 1
+                return result
+            else:
+                return result*0
+        
+    constantTemps = H.Den.constanteTemps
+
+    print(constantTemps,"\n\n\n")
+
+
+    t = np.arange(0,np.max(constantTemps)*10,np.min(constantTemps)/5)
+
+    if H.Den.coeff.shape[0] > H.Num.coeff.shape[0] + 1:
+        U = create_input(H.Den.coeff.shape[0]-2,H.Num.coeff.shape[0]-1)
+    else:
+        U = create_input(H.Num.coeff.shape[0],H.Num.coeff.shape[0]-1)
+
+    print(j(0),j(1), X0)
+
+    print("in step")
+    
+
+    def kl(compteur):
+        return [1]
+    
+    s = euler_implicite(H,t,kl,C,X0,"")
+        
+
+    app = QtWidgets.QApplication(sys.argv)
+    window = StepWindow()
+    window.plot(t,s)
+    app.exec_()
+
+
+if __name__ == "__main__":
+    K = 6
+    w0 = 0.1
+    z = 0.7
+    Den = Polynome([1/(w0**2),2*z/w0, 1])
+    Num = Polynome([K])
+    H = SystemeLineaire(Num, Den)
+    step(H)
