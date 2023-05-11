@@ -23,6 +23,7 @@ class StepWindow(QtWidgets.QMainWindow):
 
         self.times_plotted = []
         self.sortie_plotted = []
+        self.scatter_info_dict = {}
 
         # Create the maptlotlib FigureCanvas object,
         # which defines a single set of axes as self.axes.
@@ -53,7 +54,9 @@ class StepWindow(QtWidgets.QMainWindow):
                               color="#21130d", linestyle='dashed',
                               linewidth=1)
 
-    def scatter_point(self, t, y, s=60):
+    def scatter_point(self, t, y, s=60, info={}):
+        self.scatter_info_dict[(t, y)] = info
+
         self.times_plotted.append(t)
         self.sortie_plotted.append(y)
         self.colors = [(0, 0, 0) for i in self.times_plotted]
@@ -101,7 +104,11 @@ class StepWindow(QtWidgets.QMainWindow):
         self.plot_v_line(p1_temps, p1)
         self.plot_v_line(p2_temps, p2)
 
-        self.scatter_point(p2_temps, p2)
+        info = {}
+        info["name"] = "RiseTime"
+        info["pourcentage"] = pourcentage1
+
+        self.scatter_point(p2_temps, p2, info = info)
         self.scatter_point(p1_temps, p1)
 
     def plot(self, time, sortie):
@@ -127,12 +134,13 @@ class StepWindow(QtWidgets.QMainWindow):
         )
         self.annotation.set_visible(False)
 
-        self.plot_rising_information(time, sortie, 0.05, 0.95)
+        self.plot_steady_info(steady_t,steady)
 
         self.canvas.axes.plot(time, sortie, color="b")
         self.canvas.flush_events()
         self.canvas.axes.set_xlabel("temps")
-        self.canvas.axes.set_xlabel("Réponse du système")
+        self.canvas.axes.set_ylabel("Amplitude")
+        self.canvas.axes.set_title("Réponse du système")
         self.canvas.axes.legend()
         self.canvas.fig.canvas.mpl_connect(
             'motion_notify_event', self.motion_hover)
@@ -144,10 +152,17 @@ class StepWindow(QtWidgets.QMainWindow):
             if is_contained:
                 data_point_location = self.scatter.get_offsets()[
                     annotation_index['ind'][0]]
+                print(data_point_location)
                 self.annotation.xy = data_point_location
 
-                text_label = '({0:.2f}, {0:.2f})'.format(
-                    data_point_location[0], data_point_location[1])
+                text_label = ""
+
+                info = self.scatter_info_dict[tuple(data_point_location)]
+
+                if(info["name"] == "RiseTime"):
+
+                    text_label = 'Temps de montée à {:.2f} : {:.2f}'.format(
+                        info["pourcentage"], data_point_location[1])
 
                 self.annotation.set_text(text_label)
 
