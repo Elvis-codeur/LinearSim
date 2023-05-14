@@ -141,7 +141,7 @@ def step(H: SystemeLineaire):
 if __name__ == "__main__":
     K = 6
     w0 = 0.1
-    z = 3
+    z = 0.7
     Den = Polynome([1/(w0**2), 2*z/w0, 1])
     Num = Polynome([K])
     print(Den+Num)
