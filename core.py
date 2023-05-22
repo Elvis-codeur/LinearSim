@@ -346,6 +346,11 @@ def test_charge_decharge():
         
         X0 = s[-1]
 
+        if((i+1) % 2):
+            U_ = 1
+        else:
+            U_ = 0
+
         t_final = np.concatenate([t_final,t])
         s_final = np.concatenate([s_final,s])
 
