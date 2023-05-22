@@ -1,5 +1,5 @@
 import numpy as np
-
+import matplotlib.pyplot as plt 
 
 class Fonction():
     def __init__(self, *args, **kwargs) -> None:
@@ -208,6 +208,49 @@ def euler_implicite(H: SystemeLineaire, temps,
 
     return y
 
+
+def euler_implicite2(A,B,C,D,U,X0,temps,input_type="compteur"):
+    """
+    H: C'est la fonction de transfert en temps continue de la fonction linéaire
+    temps: Le temps pour la simulation
+    U: Une fonction qui renvoie l'entrée
+    C: La matrice C
+    X0: Les condititions initiale
+    type_temps: Pour savoir si on envoie le compteur dans U ou si on envoie le temps
+    """
+    print(A,"\n\n", B)
+
+    X = X0
+
+    dt = 0
+    y = np.zeros_like(temps)
+    y[0] = X0
+    compteur = 0
+    T = 0
+    for i in range(1, temps.shape[0]):
+        dt = temps[i] - temps[i-1]
+
+        # On doit diviser la sortie par le coefficient de y'(n)
+        if input_type == "compteur":
+            Input = U(compteur) 
+        else:
+            Input = U(T)
+
+        Xt = np.linalg.inv(np.eye(A.shape[0], A.shape[0]) - A*dt)
+
+        #print(B,Input,"elv")
+        #print(B,Input,np.dot(B, Input),"Elvis")
+        #print(Xt, X, B, Input, np.dot(B, Input))
+        X = np.dot(Xt, X + np.dot(B, Input)*dt)
+
+        s = np.dot(C, X) + np.dot(D,Input)
+        y[i] = s
+
+        compteur += 1
+        T += dt
+
+    return y
+
 def create_input(dim,derive_n):
     def U(compteur):
         if compteur == 0:
@@ -219,7 +262,52 @@ def create_input(dim,derive_n):
     return U
 
 
-if __name__ == "__main__":
+def euler_implicite3(A,B,C,D,U,X0,temps,input_type="compteur"):
+    """
+    H: C'est la fonction de transfert en temps continue de la fonction linéaire
+    temps: Le temps pour la simulation
+    U: Une fonction qui renvoie l'entrée
+    C: La matrice C
+    X0: Les condititions initiale
+    type_temps: Pour savoir si on envoie le compteur dans U ou si on envoie le temps
+    """
+    print(A,"\n\n", B)
+
+    X = X0
+
+    dt = 0
+    y = []
+    y.append(X0)
+    compteur = 0
+    T = 0
+    for i in range(1, temps.shape[0]):
+        dt = temps[i] - temps[i-1]
+
+        # On doit diviser la sortie par le coefficient de y'(n)
+        if input_type == "compteur":
+            Input = U(compteur) 
+        else:
+            Input = U(T)
+
+        Xt = np.linalg.inv(np.eye(A.shape[0], A.shape[0]) - A*dt)
+
+        #print(B,Input,"elv")
+        #print(B,Input,np.dot(B, Input),"Elvis")
+        #print(Xt, X, B, Input, np.dot(B, Input))
+
+
+        X = np.dot(Xt, X + np.dot(B, Input)*dt)
+
+        #s = np.dot(C, X) + np.dot(D,Input)
+        y.append(X)
+
+        compteur += 1
+        T += dt
+
+    return np.array(y)
+
+
+def test_polynome():
     a = Polynome(coeff=[1, 0, 1])
     b = Polynome(coeff=[1, 0])
     c = a + b
@@ -233,3 +321,59 @@ if __name__ == "__main__":
     g.init()
     print(g.coeff)
     print(g.matrice_commande(4))
+
+def test_charge_decharge():
+    r = 100
+    c = 1e-6
+    A = np.array([-1/(r*c)])
+    B = np.array([1/(r*c)])
+    C = np.array([1])
+    D = np.array([0])
+
+    U_ = 1
+    def U(x):
+        return U_
+    
+    pas = r*c*5
+
+    t_final = np.array([])
+    s_final = np.array([])
+    X0 = 0
+    for i in range(0,10):
+        t = np.linspace(i*pas,pas*(i+1),10)
+        #print(t)
+        s = euler_implicite2(A,B,C,D,U,X0,t)
+        
+        X0 = s[-1]
+
+        t_final = np.concatenate([t_final,t])
+        s_final = np.concatenate([s_final,s])
+
+    plt.plot(t_final,s_final)
+    plt.show()
+
+
+def test_decharge():
+    r = 100
+    c = 1e-6
+    A = np.array([-1/(r*c)])
+    B = np.array([1/(r*c)])
+    C = np.array([1])
+    D = np.array([0])
+
+    U_ = 0
+    X0 =  1
+
+    def U(x):
+        return U_
+    
+    pas = r*c*5
+    t = np.linspace(0,pas,100)
+    s = euler_implicite2(A,B,C,D,U,X0,t)
+    plt.plot(t,s)
+    plt.show()
+
+
+
+if __name__ == "__main__":
+    test_charge_decharge()
