@@ -2,8 +2,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 import sys
+
 sys.path.append("D:/projet_github/LinearSim")
-from core import euler_implicite2, euler_implicite3
+from buck_simulator.solveur import euler_implicite
 
 def integrate(s, t, x0):
     result = []
@@ -19,9 +20,9 @@ l = 1e-2
 r = 1
 c = 1e-2
 
-f =  100
+f =  1e5
 alpha = 0.75
-
+T = 1/f
 
 
 def charge(X0,t):
@@ -40,21 +41,18 @@ def charge(X0,t):
     )
     Vs = [12, 0]
     C = [1, 1]
-    X0 = [0, 0]
 
     def U(t):
         return Vs
     D = B*0
 
-    s = euler_implicite3(A, B, C, D, U, X0, t)
-    print(s.shape)
+    s = euler_implicite(A, B, C, D, U, X0, t)
+    #print(s.shape)
 
     dIL = s[:, 0]
     dV0 = s[:, 1]
 
     return (t,dIL,dV0)
-
-
 def decharge(X0,t):
     A = np.array(
         [
@@ -75,8 +73,8 @@ def decharge(X0,t):
         return Vs
     D = B*0
 
-    s = euler_implicite3(A, B, C, D, U, X0, t)
-    print(s.shape)
+    s = euler_implicite(A, B, C, D, U, X0, t)
+    #print(s.shape)
 
     dIL = s[:, 0]
     dV0 = s[:, 1]
@@ -129,11 +127,46 @@ def test_decharge():
     plt.legend()
     plt.show()
 
-if __name__ == "__main__":
-    X0 = np.array([[2,2]])
-    t =  np.linspace(0,1,1000)
-    t, i, u, = decharge(X0,t)
-    plt.plot(t,i,label = "i")
-    plt.plot(t,u,label = "u")
+def simulate():
+    X0 = np.array([0,0])
+    t =  T 
+    time = np.array([])
+    i = np.array([])
+    u = np.array([])
+
+    while t < 1000*T:
+        t1 =  np.linspace(t-T,t-(1- alpha)*T  ,10)
+        t2 =  np.linspace(t-(1- alpha)*T,t,10)
+
+        t_charge, i_charge, u_charge, = charge(X0,t1)
+        X0 = np.array([i_charge[-1],u_charge[-1]])
+
+        t_decharge, i_decharge, u_decharge, = decharge(X0,t2)
+        X0 = np.array([i_decharge[-1],u_decharge[-1]])
+
+        time = np.concatenate([time,t1,t2])
+        i = np.concatenate([i,i_charge,i_decharge])
+        u = np.concatenate([u,u_charge,u_decharge])
+        
+        t += T
+
+
+
+    plt.plot(time,i,label = "i")
+    plt.plot(time,u,label = "u")
     plt.legend()
     plt.show()
+
+
+if __name__ == "__main__":
+    X0 = np.array([0,0])
+    t = np.linspace(0,1,1000)
+    t,i,u = charge(X0,t)
+    plt.plot(t,i,label = "I_l")
+    plt.plot(t,u,label = "U_c")
+    plt.legend()
+    plt.show()   
+    
+    
+
+    

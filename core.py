@@ -271,7 +271,7 @@ def euler_implicite3(A,B,C,D,U,X0,temps,input_type="compteur"):
     X0: Les condititions initiale
     type_temps: Pour savoir si on envoie le compteur dans U ou si on envoie le temps
     """
-    print(A,"\n\n", B)
+    #print(A,"\n\n", B)
 
     X = X0
 
