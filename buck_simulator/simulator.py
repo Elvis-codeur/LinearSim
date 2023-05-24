@@ -52,7 +52,7 @@ def charge(X0,t):
     dIL = s[:, 0]
     dV0 = s[:, 1]
 
-    return (t[:-1], integrate(dIL, t, X0[0]), integrate(dV0, t, X0[1]))
+    return (t,dIL,dV0)
 
 
 def decharge(X0,t):
@@ -81,7 +81,7 @@ def decharge(X0,t):
     dIL = s[:, 0]
     dV0 = s[:, 1]
 
-    return (t[:-1], integrate(dIL, t, X0[0]), integrate(dV0, t, X0[1]))
+    return (t,dIL,dV0)
     
 
 
@@ -130,4 +130,10 @@ def test_decharge():
     plt.show()
 
 if __name__ == "__main__":
-    test_charge_decharge()
+    X0 = np.array([[2,2]])
+    t =  np.linspace(0,1,1000)
+    t, i, u, = decharge(X0,t)
+    plt.plot(t,i,label = "i")
+    plt.plot(t,u,label = "u")
+    plt.legend()
+    plt.show()
