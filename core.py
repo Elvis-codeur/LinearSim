@@ -59,9 +59,7 @@ class Polynome(Fonction):
         else:"""
 
         l = self.coeff.shape[0]
-
-        result = np.zeros(shape=(dim, l))
-
+        result = np.zeros(shape=(dim, max(dim,l)))
         for i in range(self.coeff.shape[0]):
             result[dim-1, i] = self.coeff[self.coeff.shape[0] - i-1]
 
@@ -182,6 +180,7 @@ def euler_implicite(H: SystemeLineaire, temps,
 
     dt = 0
     y = np.zeros_like(temps)
+    y[0] = np.dot(X0,C)
     compteur = 0
     T = 0
     for i in range(1, temps.shape[0]):
@@ -197,7 +196,8 @@ def euler_implicite(H: SystemeLineaire, temps,
 
         #print(B,Input,"elv")
         #print(B,Input,np.dot(B, Input),"Elvis")
-        #print(Xt, X, B, Input, np.dot(B, Input))
+        #print("\n Elvis \n")
+        #print(Xt, X, B, Input)
         X = np.dot(Xt, X + np.dot(B, Input)*dt)
 
         s = np.dot(C, X)
@@ -307,6 +307,8 @@ def euler_implicite3(A,B,C,D,U,X0,temps,input_type="compteur"):
     return np.array(y)
 
 
+
+
 def test_polynome():
     a = Polynome(coeff=[1, 0, 1])
     b = Polynome(coeff=[1, 0])
@@ -355,7 +357,7 @@ def test_charge_decharge():
         s_final = np.concatenate([s_final,s])
 
     plt.plot(t_final,s_final)
-    plt.show()
+    plt.show()    
 
 
 def test_decharge():
@@ -379,6 +381,99 @@ def test_decharge():
     plt.show()
 
 
+def rk4_ordre_1(model,y0,dt,T):
+    time = 0.0 
+    y = y0 
+    t = [time]
+    s = [y0]
+    while time < T:
+        k1 = model(time,y)
+        k2 = model(time + dt/2, y + (dt/2)*k1)
+        k3 = model(time + dt/2, y + (dt/2)*k2)
+        k4 = model(time + dt, y + dt*k3)
+        y =  y + (dt/6)*(k1 + 2*k2 + 2*k3 + k4)
+        time += dt 
+
+        t.append(time)
+        s.append(y)
+    return np.array(t),np.array(s) 
+
+
+def rk4(H: SystemeLineaire, temps,
+                    U, C, X0, input_type="compteur"):
+    
+    A = H.Den.matriceCompagne
+    # print(A)
+    B = H.Num.matrice_commande(A.shape[0])
+
+    print(A,"\n\n", B)
+
+    X = X0
+
+    dt = 0
+    y = np.zeros_like(temps)
+    compteur = 0
+    T = 0
+    for i in range(1, temps.shape[0]):
+        dt = temps[i] - temps[i-1]
+
+        # On doit diviser la sortie par le coefficient de y'(n)
+        if input_type == "compteur":
+            Input = U(compteur) / H.Den.coeff[0]
+        else:
+            Input = U(T)/H.Den.coeff[0]
+
+
+        K1 = np.dot(A,X) + np.dot(B,Input)
+        K2 = np.dot(A,X +(dt/2)*K1)+np.dot(B,Input)
+        K3 = np.dot(A,X + (dt/2)*K2)+np.dot(B,Input)
+        K4 = np.dot(A,X + dt*K3)+np.dot(B,Input)
+
+        X = (dt/6)*(K1 + 2*K2 + 2*K3 + K4)
+
+        s = np.dot(C, X)
+        y[i] = s
+
+        compteur += 1
+        T += dt
+
+    return y
+
+
+def mo(t,y):
+    return 4*y + 9 
+
+
+def test_rk1_ordre_1():
+    t,s = rk4(mo,0,0.01,1)
+    s2 = (9/4)*(np.exp(4*t) -1)
+    plt.plot(t,s,label ="s")
+    plt.plot(t,s2,label = "s2")
+    plt.legend()
+    plt.show()
+
+
+def U(x):
+    return np.array([1,0,0])
 
 if __name__ == "__main__":
-    test_charge_decharge()
+    Den = Polynome([1,1])*Polynome([1,7])*Polynome([1,3])
+    Num = Polynome([27])
+
+    print(Den,Num)
+
+    H = SystemeLineaire(Num,Den)
+    t = np.linspace(0,7,1000)
+    C = np.array([1,0,0])
+    X0 = np.array([1,0,0])
+
+    s = euler_implicite(H,t,U,C,X0)
+    plt.plot(t,s,label = "euleur implicite")
+    
+    srk4 = rk4(H,t,U,C,X0)
+    plt.plot(t,s,label = "rk4")
+
+    plt.legend()
+
+
+    plt.show()
