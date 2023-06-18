@@ -525,7 +525,7 @@ def get_tf_from_step_response(t,s,order:int):
     return result
 
 def test_get_tf_from_step_response():
-    Den = Polynome([1,7])*Polynome([1,10])*Polynome([1,40])
+    Den = Polynome([1,1])*Polynome([1,1])*Polynome([1,1])
     Num = Polynome([1,])
 
     H = SystemeLineaire(Num,Den)
