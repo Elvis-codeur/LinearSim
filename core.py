@@ -412,6 +412,7 @@ def rk4(H: SystemeLineaire, temps,
 
     dt = 0
     y = np.zeros_like(temps)
+    y[0] = np.dot(X0,C)
     compteur = 0
     T = 0
     for i in range(1, temps.shape[0]):
@@ -429,7 +430,7 @@ def rk4(H: SystemeLineaire, temps,
         K3 = np.dot(A,X + (dt/2)*K2)+np.dot(B,Input)
         K4 = np.dot(A,X + dt*K3)+np.dot(B,Input)
 
-        X = (dt/6)*(K1 + 2*K2 + 2*K3 + K4)
+        X = (dt/6)*(K1 + 2*K2 + 2*K3 + K4) +X
 
         s = np.dot(C, X)
         y[i] = s
@@ -456,7 +457,8 @@ def test_rk1_ordre_1():
 def U(x):
     return np.array([1,0,0])
 
-if __name__ == "__main__":
+
+def test_rk4():
     Den = Polynome([1,1])*Polynome([1,7])*Polynome([1,3])
     Num = Polynome([27])
 
@@ -465,15 +467,111 @@ if __name__ == "__main__":
     H = SystemeLineaire(Num,Den)
     t = np.linspace(0,7,1000)
     C = np.array([1,0,0])
-    X0 = np.array([1,0,0])
+    X0 = np.array([0,0,0])
 
     s = euler_implicite(H,t,U,C,X0)
     plt.plot(t,s,label = "euleur implicite")
     
     srk4 = rk4(H,t,U,C,X0)
-    plt.plot(t,s,label = "rk4")
+    plt.plot(t,srk4,label = "rk4")
 
     plt.legend()
 
-
     plt.show()
+
+
+def get_tf_from_step_response(t,s,order:int):
+    steady = s[-1]
+
+    d_kernel = np.array([1,-1])
+    dt = np.convolve(t,d_kernel,"same")
+    d_s_array = [s]
+    ds = s
+
+    for i in range(order):
+        ds = np.convolve(ds,d_kernel,"same")
+        d_s_array.append(ds/dt)
+
+    d_s_array = np.array(d_s_array)
+    #print(d_s_array)
+    #print(d_s_array.shape,s.shape)
+
+    """
+    plt.plot(t,s,label = "s")
+    plt.plot(t,d_s_array[0,:],label = "s de ds_array")
+    plt.plot(t,d_s_array[1,:],label = "ds")
+    plt.plot(t,d_s_array[2,:],label = "dds")
+    plt.plot(t,d_s_array[3,:],label = "dds")
+
+    J = [ 1 ,57,  750, 2800]
+    Js = np.zeros_like(s)
+    for i in range(4):
+        Js += d_s_array[3-i,:]*J[i]
+
+    #plt.plot(t,Js,label = "recon")
+    
+    
+    plt.legend()
+    plt.show()
+    """
+
+    Y = np.ones(order+1)
+    M = d_s_array[:,(order+1):2*(order+1)]
+    print(M)
+
+    #print(M.shape)
+    #print(M,"\n\n",M.T)
+    result = np.dot(np.linalg.inv(M.T),Y)
+    return result
+
+def test_get_tf_from_step_response():
+    Den = Polynome([1,7])*Polynome([1,10])*Polynome([1,40])
+    Num = Polynome([1,])
+
+    H = SystemeLineaire(Num,Den)
+    t = np.linspace(0,7,1000)
+    C = np.zeros(Den.coeff.shape[0]-1)
+    C[0] = 1
+    X0 = np.zeros(Den.coeff.shape[0]-1)
+
+
+    srk4 = rk4(H,t,U,C,X0)
+
+    simpli = euler_implicite(H,t,U,C,X0)
+    
+    den_coeff = get_tf_from_step_response(t,srk4,3)
+    print(Den,den_coeff)
+
+    test_den = Polynome(den_coeff)
+    test_H = SystemeLineaire(Num,test_den)
+    test_sk4 = rk4(test_H,t,U,C,X0)
+
+
+    plt.plot(t,srk4,label = "true")
+    plt.plot(t,test_sk4,label = "guess")
+    plt.legend()
+    plt.show()
+
+
+    """
+    plt.plot(t,srk4,label = "rk4")
+    plt.plot(t,simpli,label = "euleur implicite")
+    plt.legend()
+    print(Den)
+    plt.show()
+
+    """
+    
+
+if __name__ == "__main__":
+    """
+    t = np.array([i**2 for i in range(100)])
+    dt = np.array([2*i for i in range(100)])
+    mydt = np.convolve(t,np.array([1,-1]),"same")
+    plt.plot(t,label = "t")
+    plt.plot(dt,label = "dt")
+    plt.plot(mydt,label = "mydt")
+    plt.legend()
+    plt.show()
+    """
+    test_get_tf_from_step_response()
