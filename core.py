@@ -563,6 +563,34 @@ def test_get_tf_from_step_response():
     """
     
 
+def test_rapport():
+    plt.rcParams['text.usetex'] = True
+
+    Num = Polynome([6,])
+    Den = Polynome([100,14,1])
+    H = SystemeLineaire(Num,Den)
+
+    t = np.linspace(0,100,1000)
+    C = np.zeros(Den.coeff.shape[0]-1)
+    C[0] = 1
+    X0 = np.zeros(Den.coeff.shape[0]-1)
+
+    def U_interne(x):
+        return np.array([1,0])
+
+    srk4 = rk4(H,t,U_interne,C,X0)
+
+    fig,ax = plt.subplots()
+    fig.set_dpi(200)
+
+    ax.plot(t,srk4)
+
+    ax.set_xlabel("temps")
+    ax.set_xlabel("Réponse du sytème")
+    fig.suptitle(r"H(p) = \frac{6}{100p^2 + 14p + 1}")
+    plt.show()
+
+
 if __name__ == "__main__":
     """
     t = np.array([i**2 for i in range(100)])
@@ -574,4 +602,5 @@ if __name__ == "__main__":
     plt.legend()
     plt.show()
     """
-    test_get_tf_from_step_response()
+    #test_get_tf_from_step_response()
+    test_rapport()
