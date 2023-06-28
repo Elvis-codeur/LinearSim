@@ -36,6 +36,8 @@ def test_rapport():
     ax.set_ylabel("Réponse du sytème")
     #fig.suptitle(r"H(p) = \frac{6}{100p^2 + 14p + 1}")
 
+    print(np.sum(df["s"].values -srk4)**2)
+
     ax.legend()
     plt.show()
 
