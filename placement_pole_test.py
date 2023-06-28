@@ -7,7 +7,7 @@ from core  import Polynome,SystemeLineaire
 def get_main_matrice(SysNum:Polynome,SysDen:Polynome):
     n = SysDen.coeff.shape[0] -1
     m = n - 1 
-    result = np.zeros(shape =(n+m+1,2*m + 2))
+    result = np.zeros(shape =(n+m+1,2*m + 2),dtype="complex_")
 
     Num_coeff = np.append(np.zeros((SysDen.coeff.shape[0] - SysNum.coeff.shape[0],)),[SysNum.coeff,]
         )
@@ -26,7 +26,7 @@ def get_correcteur(main_matrice,desired_response:Polynome):
     #print(main_matrice.shape,desired_response.coeff.shape)
     if(np.linalg.det(main_matrice) != 0):
         result = np.dot(linalg.inv(main_matrice),np.flip(desired_response.coeff,0))
-        return result[1::2],result[0::2]
+        return np.flip(result[1::2]),np.flip(result[0::2])
     else:
         raise ValueError("Discriminant nul")
     
@@ -45,7 +45,7 @@ def polynomial_correction(H:SystemeLineaire,D):
     return get_correcteur(m,D)
 
 
-if __name__ == "__main__":
+def test_final_placement_pole():
     Num = Polynome([1])
     Den = Polynome([1,-1])*Polynome([1,1])
     D = Polynome([1,2])*Polynome([1,2])*Polynome([1,2])
@@ -55,3 +55,19 @@ if __name__ == "__main__":
     print(m_matrice)
     #print(get_correcteur(m_matrice,D))
     print(polynomial_correction(H,D))
+
+def test_pid_corrector():
+    R = 10
+    L = 100e-6
+    C = 500e-6
+    Vi = 12
+    Num = Polynome([Vi/L*C])
+    Den = Polynome([1,1/(R*C),1/(L*C)])
+
+    D = Polynome([1,-2.5e4])*Polynome([1,complex(-0.1e4,3100)])*Polynome([1,complex(-0.1e4,-3100)])
+    H = SystemeLineaire(Num,Den)
+    Num,Den = polynomial_correction(H,D)
+    print(Num,Den)
+
+if __name__ == "__main__":
+    test_pid_corrector()

@@ -15,11 +15,11 @@ class Polynome(Fonction):
     def __init__(self, coeff=[], roots=[],
                  *args, **kwargs):
 
-        self.coeff = np.array(coeff)
-        self.roots = np.array(roots)
+        self.coeff = np.array(coeff,dtype="complex_")
+        self.roots = np.array(roots,dtype= "complex_")
         self.constanteTemps = np.array([])
-        self.matriceCompagne = np.array([])
-        self.matriceModale = np.array([])
+        self.matriceCompagne = np.array([],dtype="complex_")
+        self.matriceModale = np.array([],dtype="complex_")
 
         self.init()
         super(Polynome, self).__init__(*args, **kwargs)
