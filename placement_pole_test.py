@@ -57,17 +57,33 @@ def test_final_placement_pole():
     print(polynomial_correction(H,D))
 
 def test_pid_corrector():
+    """
+    Forme géréral du système A(p)/B(p)
+    A(p) = a_2p^2 + a_1p + a_0
+    B(p) = b_2p^2 + b_1p + b_0
+    
+    Le dénominateur recherché est : 
+    D(p) = d_4p^4 + d_3p^3 + d_2p^2 + d_1p + d_0
+    """
     R = 10
     L = 100e-6
     C = 500e-6
     Vi = 12
-    Num = Polynome([Vi/L*C])
-    Den = Polynome([1,1/(R*C),1/(L*C)])
+    NumS = Polynome([Vi/L*C])
+    DenS = Polynome([1,1/(R*C),1/(L*C)])
+    Numcoeff = [0,0,1]
+    Den = Polynome([1,10])*Polynome([1,10])*Polynome([1,10])*Polynome([1,10])
 
-    D = Polynome([1,-2.5e4])*Polynome([1,complex(-0.1e4,3100)])*Polynome([1,complex(-0.1e4,-3100)])
-    H = SystemeLineaire(Num,Den)
-    Num,Den = polynomial_correction(H,D)
-    print(Num,Den)
+    M = np.array([
+        [Numcoeff[1],0,Numcoeff[2]],
+        [Numcoeff[0],Numcoeff[2],Numcoeff[1]],
+        [0,Numcoeff[1],Numcoeff[0]]
+    ])
+    print(M)
+    print(np.linalg.det(M))
+
+
+    
 
 if __name__ == "__main__":
     test_pid_corrector()
