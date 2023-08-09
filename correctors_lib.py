@@ -26,6 +26,6 @@ def get_correcteur(main_matrice,desired_response:Polynome):
     #print(main_matrice.shape,desired_response.coeff.shape)
     if(np.linalg.det(main_matrice) != 0):
         result = np.dot(linalg.inv(main_matrice),np.flip(desired_response.coeff,0))
-        return result[1::2],result[0::2]
+        return np.flip(result[1::2]),np.flip(result[0::2])
     else:
         raise ValueError("Discriminant nul")

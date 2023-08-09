@@ -96,9 +96,9 @@ class Polynome(Fonction):
         elif self.coeff.shape[0] < other.coeff.shape[0]:
             _coeff = np.concatenate([np.zeros((diff,)), self.coeff], 0)
             if signe == "+":
-                result = Polynome(coeff=self.coeff + _coeff)
+                result = Polynome(coeff=other.coeff + _coeff)
             elif signe == "-":
-                result = Polynome(coeff=self.coeff - _coeff)
+                result = Polynome(coeff=other.coeff - _coeff)
             else:
                 raise RuntimeError(
                     "L'opérateur {} n'est pris en charge ".format(signe))
@@ -159,6 +159,13 @@ class SystemeLineaire(FonctionRatiaonnelle):
 
     def __call__(self, x):
         return self.Num(x)/self.Den(x)
+    
+    def __repr__(self) -> str:
+        return "{} / {}".format(self.Num.__repr__(),self.Den.__repr__())
+    
+    def __mul__(self,others):
+        return SystemeLineaire(self.Num*others.Num,self.Den*others.Den)
+
 
 
 def euler_implicite(H: SystemeLineaire, temps,
