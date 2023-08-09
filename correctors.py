@@ -28,7 +28,7 @@ def polynomial_correction(H:SystemeLineaire,D):
 def feedback(H:SystemeLineaire):
     return SystemeLineaire(H.Num,H.Num + H.Den)
 
-if __name__ == "__main__":
+def test_1():
     Num = Polynome([1])
     Den = Polynome([1,-complex(1,1)])*Polynome([1,complex(1,1)])
     D = Polynome([1,23])*Polynome([1,20])*Polynome([1,10])
@@ -42,3 +42,5 @@ if __name__ == "__main__":
     Hfinal = feedback(CH)
     print(Hfinal.Den.roots)
     print(C)
+if __name__ == "__main__":
+    test_1()
