@@ -29,9 +29,9 @@ def feedback(H:SystemeLineaire):
     return SystemeLineaire(H.Num,H.Num + H.Den)
 
 def test_1():
-    Num = Polynome([1])
-    Den = Polynome([1,-complex(1,1)])*Polynome([1,complex(1,1)])
-    D = Polynome([1,23])*Polynome([1,20])*Polynome([1,10])
+    Num = Polynome([23,90])
+    Den = Polynome([1,-5,10])
+    D = Polynome([1,2])*Polynome([1,3])*Polynome([1,4])
     print(D)
     H = SystemeLineaire(Num,Den)
     m_matrice = get_main_matrice(Num,Den)   

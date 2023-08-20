@@ -8,7 +8,8 @@ def get_main_matrice(SysNum:Polynome,SysDen:Polynome):
     n = SysDen.coeff.shape[0] -1
     m = n - 1 
     result = np.zeros(shape =(n+m+1,2*m + 2))
-
+    
+    #Compléter le numérateur avec des zéros à gauche
     Num_coeff = np.append(np.zeros((SysDen.coeff.shape[0] - SysNum.coeff.shape[0],)),[SysNum.coeff,]
         )
     Den_coeff = np.flip(SysDen.coeff,0)
@@ -19,7 +20,7 @@ def get_main_matrice(SysNum:Polynome,SysDen:Polynome):
     for i in range(n):
         result[i:n+i+1,2*i] = Den_coeff
         result[i:n+i+1,2*i+1] = Num_coeff
-    #print(result)
+    print(result,"\n\n\n\n")
     return result
 
 def get_correcteur(main_matrice,desired_response:Polynome):
