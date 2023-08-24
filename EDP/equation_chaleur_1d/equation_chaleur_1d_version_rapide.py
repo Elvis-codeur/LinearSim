@@ -10,7 +10,8 @@ dt = Time/NT
 dx = L/(NX - 1)
 
 x =  np.linspace(0.0,1.0,NX)
-T = np.sin(2*np.pi*x)
+T = 0*x #np.cos(2*np.pi*x)
+T[NX//2] = 1
 RHS = np.zeros((NX))
 
 for n in range(0,NT):
