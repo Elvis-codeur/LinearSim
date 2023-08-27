@@ -9,7 +9,7 @@ k = 0.5
 dt = Time/NT
 dx = L/(NX - 1)
 
-x =  np.linspace(0.0,1.0,NX)
+x =  np.linspace(0.0,L,NX)
 T = 0*x #np.cos(2*np.pi*x)
 T[NX//2] = 1
 RHS = np.zeros((NX))
