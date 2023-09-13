@@ -20,7 +20,7 @@ t = np.linspace(0,Time,NT)
 X,Y = np.meshgrid(x,y)
 T = np.zeros((NX,NY))
 RHS = np.zeros((NX,NY))
-T = np.cos(X + Y)**2
+
 
 def code():
    for i in range(NT):
@@ -29,8 +29,8 @@ def code():
     
     T[1:-1,1:-1] += (RHS[1:-1,1:-1] + dt*S)
 
-    if i%1000 == 0:
-       plt.imshow(T,cmap="Oranges_r")
+    if i%500 == 0:
+       plt.imshow(T)
        plt.title("t = {}".format(t[i]))
        plt.show()
     
